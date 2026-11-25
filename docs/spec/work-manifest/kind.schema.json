@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:taffee:work-manifest:0.1:kind",
+  "title": "Intent kind 0.1",
+  "description": "One entry in the intent-kind registry. Supplies everything a sparse request leaves out. A published kind version is immutable (WM-KND-01).",
+  "type": "object",
+  "required": ["kind", "id", "summary", "want_template", "parameters", "deliver", "requires", "done_when", "checks", "limits", "partial_ok"],
+  "additionalProperties": false,
+  "patternProperties": { "^x-": true },
+  "properties": {
+    "kind": { "const": "0.1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+@[1-9][0-9]*$" },
+    "summary": { "type": "string", "maxLength": 300 },
+    "want_template": { "type": "string", "description": "Restates `want` from parameters: {name} is replaced by the parameter's value (WM-NRM-11)." },
+    "given": {
+      "type": "object",
+      "description": "Input slots: id → what it must be.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["is"],
+        "additionalProperties": false,
+        "properties": { "is": { "type": "string" }, "required": { "type": "boolean" } }
+      }
+    },
+    "parameters": { "type": "object", "description": "JSON Schema for `parameters`. Defaults here are kind defaults, not interpretations." },
+    "deliver": {
+      "type": "object",
+      "required": ["schema"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "type": "object", "description": "JSON Schema for `answer`." },
+        "order": { "type": "array", "items": { "type": "string" } },
+        "equivalence": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "functions": {
+      "type": "object",
+      "description": "Functions the orchestrator provides to this kind's CEL checks.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["signature", "meaning"],
+        "additionalProperties": false,
+        "properties": { "signature": { "type": "string" }, "meaning": { "type": "string" } }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "description": "The orchestrator computes `coverage` by listing the files of this input under these path globs (WM-CHK-06).",
+      "required": ["given", "paths"],
+      "additionalProperties": false,
+      "properties": { "given": { "type": "string" }, "paths": { "type": "string", "description": "Name of the parameter holding the globs." } }
+    },
+    "requires": { "$ref": "manifest.schema.json#/$defs/checkMap" },
+    "done_when": { "$ref": "manifest.schema.json#/properties/done_when" },
+    "checks": { "$ref": "manifest.schema.json#/$defs/checkMap" },
+    "decide": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["text", "options", "default"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string" },
+          "options": { "type": "array", "minItems": 2, "items": { "$ref": "manifest.schema.json#/$defs/id" } },
+          "default": { "$ref": "manifest.schema.json#/$defs/id" }
+        }
+      }
+    },
+    "limits": { "$ref": "manifest.schema.json#/$defs/limits", "required": ["effects", "usd", "time"] },
+    "partial_ok": { "type": "boolean" },
+    "delegation": { "$ref": "manifest.schema.json#/properties/delegation" },
+    "examples": {
+      "type": "array",
+      "description": "For normalizers: caller wording → parameters.",
+      "items": {
+        "type": "object",
+        "required": ["want", "parameters"],
+        "properties": { "want": { "type": "string" }, "parameters": { "type": "object" }, "given": { "type": "object" } }
+      }
+    }
+  }
+}

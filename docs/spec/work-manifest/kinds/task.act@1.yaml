@@ -1,0 +1,58 @@
+# The acting kind: a task that changes something in the world (book, buy, send, post, create),
+# in the caller's words. Validates against ../kind.schema.json. Same tools as task.general@1.
+# Its effects are irreversible, so the caller confirms once with `approved: irreversible`.
+kind: "0.1"
+id: task.act@1
+summary: Any task that changes something in the world (book, buy, send, post, create) in the caller's words, done by an agent that may call any web API, any model and helper agents. The answer lists every action taken and its outcome.
+want_template: "{task}"
+
+given: {}
+
+parameters:
+  type: object
+  required: [task]
+  additionalProperties: false
+  properties:
+    task: { type: string, minLength: 1, description: The task, in the caller's words }
+
+deliver:
+  schema:
+    type: object
+    required: [answer, actions]
+    additionalProperties: true
+    properties:
+      answer: { type: string, minLength: 1, description: "The result, in Markdown: what was found or done, and anything that could not be done" }
+      sources:
+        type: array
+        items:
+          type: object
+          required: [url]
+          additionalProperties: true
+          properties:
+            url:   { type: string }
+            title: { type: string }
+            quote: { type: string, description: Words from the source that support the answer }
+      actions:
+        type: array
+        description: Anything done in the world (a booking, a message sent), with its outcome
+        items:
+          type: object
+          required: [what, outcome]
+          additionalProperties: true
+          properties:
+            what:    { type: string }
+            outcome: { type: string }
+
+requires: {}
+
+done_when:
+  answered: The answer is not empty
+  reported: Every action taken is listed with its outcome (an empty list if none could be taken)
+
+checks:
+  answered: "answer.answer.size() > 0"
+  reported: "has(answer.actions)"
+
+limits: { effects: irreversible, usd: 2.00, time: 15m }
+partial_ok: false
+delegation: { depth: 0 }

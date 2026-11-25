@@ -1,0 +1,33 @@
+# Shared context for every vector file.
+registry:
+  - ../kinds/code.impact_analysis@1.yaml
+  # Stubs: only the fields the vectors need. Everything else (deliver, checks, decide) as in
+  # code.impact_analysis@1. Parameters listed here are required strings.
+  - stub: code.rename@1
+    want_template: Rename {symbol} to {rename_to} and open a pull request
+    given: { repo: { is: a git repository, required: true } }
+    parameters: { symbol: string, rename_to: string }
+    limits: { effects: reversible, usd: 1.00, time: 20m }
+  - stub: ops.deploy@1
+    want_template: Deploy {service} at {version} to {environment}
+    given: {}
+    parameters: { service: string, version: string, environment: string }
+    limits: { effects: irreversible, usd: 0.20, time: 15m }
+
+resolve:
+  names:
+    payments-service: [github.com/acme/payments-service]
+    billing: [github.com/acme/billing, github.com/acme/billing-legacy]
+  versions:
+    github.com/acme/payments-service@main: 4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e
+  repos:
+    github.com/acme/payments-service@4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e: ../fixtures/payments-service@4f2c9e1.yaml
+
+policy:
+  user:alice:           { max_effects: reversible, max_usd: 2.00, max_time: 1h }
+  service:ci-bot:       { max_effects: reversible, max_usd: 5.00, max_time: 1h }
+  service:intern-bot:   { max_effects: read-only,  max_usd: 0.25, max_time: 30m }
+  orchestrator:taffee-a:  { max_effects: reversible, max_usd: 5.00, max_time: 1h }
+  orchestrator:taffee-b:  { max_effects: reversible, max_usd: 5.00, max_time: 1h }
+
+normalizer: { id: taffee-normalizer, version: "0.1.0" }

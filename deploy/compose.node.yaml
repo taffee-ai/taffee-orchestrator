@@ -1,0 +1,18 @@
+# Overlay: the orchestrator as a long-running service on one test machine, with a live model.
+# Used by scripts/deploy-node.sh:
+#
+#   docker compose -p taffee-orchestrator --env-file <service-dir>/service.env \
+#     -f deploy/compose.orchestrator.yaml -f deploy/compose.node.yaml up -d
+#
+# Extra settings (env file), on top of deploy/compose.orchestrator.yaml:
+#   ORCH_IMAGE_TAG        image tag to run (the deploy script tags each build with its version)
+#   ORCH_CONFIG_FILE      the service config (template: deploy/orchestrator.node.json)
+#   ORCH_MODEL_KEY_FILE   the model provider's key; read by the host process, never by an agent
+services:
+  orchestrator:
+    image: "taffee-orchestrator:${ORCH_IMAGE_TAG:-dev}"
+    environment:
+      TAFFEE_ORCH_CONFIG: /etc/taffee/orchestrator.json
+    volumes:
+      - "${ORCH_CONFIG_FILE:?Set ORCH_CONFIG_FILE}:/etc/taffee/orchestrator.json:ro"
+      - "${ORCH_MODEL_KEY_FILE:?Set ORCH_MODEL_KEY_FILE}:/run/model.key:ro"

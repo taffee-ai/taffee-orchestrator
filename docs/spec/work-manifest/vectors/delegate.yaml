@@ -1,0 +1,65 @@
+# delegate: parent frozen manifest + what it has used so far + a child request → the child frozen manifest, or a refusal.
+# The delegating orchestrator is orchestrator:taffee-a. The parent allows one more hand-off.
+stage: delegate
+shared:
+  parent: &parent
+    $from: N-01.manifest
+    with:
+      delegation: { depth: 1 }
+      limits: { effects: read-only, usd: 0.50, time: 10m }
+  spent: &spent { usd: 0.10, time: 2m }          # leaves usd 0.40, time 8m
+  child: &child
+    manifest: "0.1"
+    kind: code.impact_analysis@1
+    parameters: { symbol: PaymentService, rename_to: PaymentGateway, paths: ["src/billing/**"] }
+    given: { repo: github.com/acme/payments-service@4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e }
+    limits: { effects: read-only, usd: 0.20, time: 3m }
+vectors:
+
+  - id: D-01
+    title: A narrower child within what the parent has left
+    rules: [WM-DLG-01, WM-DLG-04]
+    parent: *parent
+    spent: *spent
+    child: *child
+    expect:
+      sent: true
+      child:
+        by: orchestrator:taffee-a
+        for: ["user:alice"]
+        parent: $any                    # the parent's digest
+        delegation: { depth: 0 }
+        limits: { effects: read-only, usd: 0.20, time: 3m }
+        digest: $any
+
+  - id: D-02
+    title: The child's budget is more than the parent has left
+    rules: [WM-DLG-02, WM-DLG-05]
+    parent: *parent
+    spent: *spent
+    child: { <<: *child, limits: { effects: read-only, usd: 0.60, time: 3m } }
+    expect: { sent: false, violates: [WM-DLG-02] }
+
+  - id: D-03
+    title: The parent allows no further hand-off
+    rules: [WM-DLG-04, WM-DLG-05]
+    parent: { $from: N-01.manifest }    # delegation depth 0
+    spent: *spent
+    child: *child
+    expect: { sent: false, violates: [WM-DLG-04] }
+
+  - id: D-04
+    title: The child names an input the parent never had
+    rules: [WM-DLG-03, WM-DLG-05]
+    parent: *parent
+    spent: *spent
+    child: { <<: *child, given: { repo: github.com/acme/billing@0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b } }
+    expect: { sent: false, violates: [WM-DLG-03] }
+
+  - id: D-05
+    title: The child asks for effects the parent does not have
+    rules: [WM-DLG-02, WM-DLG-05]
+    parent: *parent
+    spent: *spent
+    child: { <<: *child, kind: code.rename@1, limits: { effects: reversible, usd: 0.20, time: 3m } }
+    expect: { sent: false, violates: [WM-DLG-02] }

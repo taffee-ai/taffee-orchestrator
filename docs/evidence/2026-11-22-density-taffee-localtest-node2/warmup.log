@@ -1,0 +1,7 @@
+component 36139138 bytes loaded in 20.688039416s; process PSS 5.0 MB -> 421.5 MB
+sequential: 61.0 CPU-ms/turn, 62.0 ms wall/turn (history grows each turn)
+
+ agents      PSS MB      RSS MB   marginal MB  turn1 wall ms  CPU-ms/turn   avail MB
+      1       435.6       436.9             -             91         30.0       3680
+
+DENSITY_RESULT {"component_bytes":36139138,"levels":[{"agents":1,"first_turn_cpu_ms_total":80.0,"marginal_pss_mb_per_agent":null,"mem_available_mb":3680,"private_dirty_mb":352.5390625,"pss_mb":435.626953125,"rss_mb":436.8515625,"second_turn_cpu_ms_per_agent":30.0}],"load_ms":20688.039416,"pss_after_load_mb":421.50390625,"pss_before_load_mb":5.0234375,"sequential_cpu_ms_per_turn":61.0,"sequential_wall_ms_per_turn":62.02066309999999,"stopped_early":null}

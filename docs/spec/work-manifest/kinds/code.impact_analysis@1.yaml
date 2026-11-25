@@ -1,0 +1,100 @@
+# The reference intent kind. Validates against ../kind.schema.json.
+kind: "0.1"
+id: code.impact_analysis@1
+summary: Find every place in a repository that breaks if a symbol is renamed.
+want_template: Every place that breaks if {symbol} is renamed to {rename_to}
+
+given:
+  repo: { is: a git repository, required: true }
+
+parameters:
+  type: object
+  required: [symbol, rename_to]
+  additionalProperties: false
+  properties:
+    symbol:    { type: string, minLength: 1, description: The declared name to rename }
+    rename_to: { type: string, minLength: 1 }
+    paths:     { type: array, items: { type: string }, default: ["**"], description: Glob patterns to search }
+
+deliver:
+  schema:
+    type: object
+    required: [breaks, mentions]
+    additionalProperties: false
+    properties:
+      breaks:
+        type: array
+        items:
+          type: object
+          required: [file, line, reason]
+          additionalProperties: false
+          properties:
+            file:   { type: string }
+            line:   { type: integer, minimum: 1 }
+            reason: { enum: [declaration, import, call, type, subclass, dynamic, conflict, config] }
+      mentions:
+        type: array
+        items:
+          type: object
+          required: [file, line, where]
+          additionalProperties: false
+          properties:
+            file:  { type: string }
+            line:  { type: integer, minimum: 1 }
+            where: { enum: [comment, doc, string] }
+  order: [file, line]
+  equivalence:
+    breaks:   set(file, line, reason)
+    mentions: set(file, line)
+
+functions:
+  declared:      { signature: "declared(repo, symbol) -> bool", meaning: The symbol is declared (class, interface, type, function) at the pinned version }
+  line_exists:   { signature: "line_exists(repo, file, line) -> bool", meaning: The file exists at the pinned version and has at least that many lines }
+  line_mentions: { signature: "line_mentions(repo, file, line, symbol) -> bool", meaning: That line contains the symbol as a whole word }
+
+coverage:   # the orchestrator lists these files itself (WM-CHK-06)
+  given: repo
+  paths: paths
+
+requires:
+  declared: "declared(given.repo, parameters.symbol)"
+
+done_when:
+  cited:     Every place cites a file and line that exist at the pinned commit
+  on_target: Every cited line mentions the symbol
+  complete:  Every source file was searched
+
+checks:
+  cited:     "(answer.breaks + answer.mentions).all(i, line_exists(given.repo, i.file, i.line))"
+  on_target: "(answer.breaks + answer.mentions).all(i, line_mentions(given.repo, i.file, i.line, parameters.symbol))"
+  complete:  "coverage.missed.size() == 0 && coverage.searched == coverage.total"
+
+decide:
+  non_code_mentions:
+    text: Mentions in comments, docs and strings
+    options: [list_as_mentions, list_as_breaks, ignore]
+    default: list_as_mentions
+  dynamic_references:
+    text: References through reflection or string lookup that may resolve to the symbol
+    options: [list_as_breaks, ignore]
+    default: list_as_breaks
+  tests:
+    text: Files under test directories
+    options: [include, exclude]
+    default: include
+  generated_code:
+    text: Generated files
+    options: [include, exclude]
+    default: include
+
+limits: { effects: read-only, usd: 0.50, time: 10m }
+partial_ok: false
+delegation: { depth: 0 }
+
+examples:
+  - want: If I rename PaymentService to PaymentGateway in payments-service, what breaks?
+    parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+    given: { repo: payments-service }
+  - want: what uses OrderRepo in billing? want to call it OrderStore
+    parameters: { symbol: OrderRepo, rename_to: OrderStore }
+    given: { repo: billing }

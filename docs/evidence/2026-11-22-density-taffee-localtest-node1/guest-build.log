@@ -1,0 +1,8 @@
+1. Bundling agent.ts with esbuild...
+
+  dist/bundle.js  2.4mb ⚠️
+
+⚡ Done in 516ms
+✓ Bundle generated at dist/bundle.js
+2. Componentizing bundle to WASI 0.2 Component...
+✓ WASI 0.2 component emitted successfully: /src/strand-agent/dist/strand-agent.wasm

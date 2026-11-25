@@ -1,0 +1,54 @@
+[package]
+name = "taffee-orchestrator"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Taffee orchestrator: many long-lived Wasm agents per host on Wasmtime 49"
+
+[lib]
+name = "taffee_orchestrator"
+path = "src/lib.rs"
+
+[[bin]]
+name = "orchestratord"
+path = "src/bin/orchestratord.rs"
+
+[[bin]]
+name = "taffee-run"
+path = "src/main.rs"
+
+[[bin]]
+name = "density"
+path = "src/bin/density.rs"
+
+[dependencies]
+wasmtime = { version = "49.0.4", features = ["component-model", "async", "pooling-allocator"] }
+wasmtime-wasi = "49.0.4"
+wasmtime-wasi-http = "49.0.4"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+http = "1.0"
+http-body-util = "0.1"
+hyper = { version = "1.0", features = ["full"] }
+bytes = "1.0"
+wasmparser = { version = "0.258", features = ["component-model"] }
+axum = "0.8"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+uuid = { version = "1", features = ["v4"] }
+cel = "0.16"
+jsonschema = { version = "0.61", default-features = false }
+serde_yaml = "0.9"
+globset = "0.4"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+regex = "1"
+
+[profile.release]
+debug = 0

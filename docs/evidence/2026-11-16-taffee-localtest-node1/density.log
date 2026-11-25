@@ -1,0 +1,12 @@
+component 35412550 bytes loaded in 263.000243ms; process PSS 4.4 MB -> 11.2 MB
+sequential: 58.0 CPU-ms/turn, 58.7 ms wall/turn (history grows each turn)
+
+ agents      PSS MB      RSS MB   marginal MB  turn1 wall ms  CPU-ms/turn   avail MB
+      1        39.1        40.5             -             72         40.0       3692
+     10        75.7       140.7          4.07            209         49.0       3660
+     50       240.6       593.0          4.11            922         49.2       3471
+    100       459.6      1175.5          4.25           1147         50.9       3260
+    200       897.6      2337.9          4.31           2290         51.9       2776
+    300      1371.5      3542.2          4.46           2372         53.6       2251
+
+DENSITY_RESULT {"component_bytes":35412550,"levels":[{"agents":1,"first_turn_cpu_ms_total":70.0,"marginal_pss_mb_per_agent":null,"mem_available_mb":3692,"private_dirty_mb":6.3203125,"pss_mb":39.0810546875,"rss_mb":40.48828125,"second_turn_cpu_ms_per_agent":40.0},{"agents":10,"first_turn_cpu_ms_total":780.0,"marginal_pss_mb_per_agent":4.072482638888889,"mem_available_mb":3660,"private_dirty_mb":42.9140625,"pss_mb":75.7333984375,"rss_mb":140.71484375,"second_turn_cpu_ms_per_agent":49.0},{"agents":50,"first_turn_cpu_ms_total":3510.0,"marginal_pss_mb_per_agent":4.112882653061225,"mem_available_mb":3471,"private_dirty_mb":207.79296875,"pss_mb":240.6123046875,"rss_mb":593.04296875,"second_turn_cpu_ms_per_agent":49.2},{"agents":100,"first_turn_cpu_ms_total":4430.0,"marginal_pss_mb_per_agent":4.247395833333333,"mem_available_mb":3260,"private_dirty_mb":426.6953125,"pss_mb":459.5732421875,"rss_mb":1175.47265625,"second_turn_cpu_ms_per_agent":50.9},{"agents":200,"first_turn_cpu_ms_total":8880.0,"marginal_pss_mb_per_agent":4.314129239949748,"mem_available_mb":2776,"private_dirty_mb":864.71484375,"pss_mb":897.5927734375,"rss_mb":2337.9453125,"second_turn_cpu_ms_per_agent":51.85},{"agents":300,"first_turn_cpu_ms_total":8900.0,"marginal_pss_mb_per_agent":4.456103678929765,"mem_available_mb":2251,"private_dirty_mb":1338.296875,"pss_mb":1371.4560546875,"rss_mb":3542.171875,"second_turn_cpu_ms_per_agent":53.63333333333333}],"load_ms":263.000243,"pss_after_load_mb":11.2314453125,"pss_before_load_mb":4.4072265625,"sequential_cpu_ms_per_turn":58.0,"sequential_wall_ms_per_turn":58.68217785,"stopped_early":null}

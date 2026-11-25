@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:taffee:work-manifest:0.1:reply",
+  "title": "Work manifest 0.1 reply",
+  "description": "The one document an orchestrator returns for a request.",
+  "type": "object",
+  "required": ["reply", "status"],
+  "properties": {
+    "reply": { "const": "0.1" },
+    "request": { "type": "string", "maxLength": 128, "description": "The caller's `id`, if it sent one." },
+    "status": { "enum": ["READY", "REFUSED", "ACCEPTED", "COMPLETED", "PARTIAL", "NOT_FOUND", "INDETERMINATE", "FAILED", "CANCELED"] },
+    "digest": { "$ref": "manifest.schema.json#/$defs/digest" },
+    "normalized_by": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "properties": { "id": { "type": "string" }, "version": { "type": "string" } }
+    },
+    "assumed": { "$ref": "manifest.schema.json#/properties/assumed" },
+
+    "manifest": { "$ref": "manifest.schema.json", "description": "The frozen manifest: on READY, and on REFUSED needs_approval or unclear (what would have run)." },
+    "reason": { "enum": ["unclear", "needs_approval", "out_of_policy", "over_budget", "unsupported", "invalid"] },
+    "violates": { "type": "array", "items": { "type": "string", "pattern": "^WM-[A-Z]{3}-[0-9]{2}$" } },
+    "detail": { "type": "string", "maxLength": 2000 },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["field", "question"],
+        "additionalProperties": false,
+        "properties": {
+          "field": { "type": "string" },
+          "question": { "type": "string" },
+          "options": { "type": "array", "items": {} }
+        }
+      }
+    },
+    "counter": { "$ref": "manifest.schema.json", "description": "A frozen manifest the orchestrator would run instead (out_of_policy)." },
+    "estimate": { "$ref": "manifest.schema.json#/$defs/limits" },
+    "receipt": { "type": "string", "minLength": 1, "maxLength": 128 },
+
+    "checks": {
+      "type": "object",
+      "description": "Every check id from the manifest, plus `deliver`.",
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/$defs/checkStatus" },
+          {
+            "type": "object",
+            "required": ["status"],
+            "additionalProperties": false,
+            "properties": {
+              "status": { "$ref": "#/$defs/checkStatus" },
+              "detail": { "type": "string", "maxLength": 2000 },
+              "verifier": { "$ref": "manifest.schema.json#/$defs/pinnedRef" }
+            }
+          }
+        ]
+      }
+    },
+    "answer": { "description": "Validates against the manifest's deliver.schema." },
+    "coverage": {
+      "type": "object",
+      "required": ["searched", "total", "missed"],
+      "additionalProperties": false,
+      "properties": {
+        "searched": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "missed": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "missing": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Ids of `requires` that were false." },
+    "failure": {
+      "type": "object",
+      "required": ["code"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "enum": ["checks_failed", "timeout", "budget_exhausted", "input_unavailable", "effect_denied", "internal"] },
+        "detail": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "proposals": { "type": "array", "items": { "$ref": "manifest.schema.json" }, "description": "Suggested follow-up work. Sparse manifests. Never run by the orchestrator on the strength of this request." },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "usd": { "type": "number", "minimum": 0 },
+        "time": { "$ref": "manifest.schema.json#/$defs/duration" },
+        "tokens": { "type": "integer", "minimum": 0 },
+        "model_calls": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "trace": { "type": "string", "maxLength": 256, "description": "Opaque id for the orchestrator's own record of the run." }
+  },
+  "patternProperties": { "^x-": true },
+  "additionalProperties": false,
+
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "READY" } } }, "then": { "required": ["digest", "manifest", "normalized_by"] } },
+    { "if": { "properties": { "status": { "const": "REFUSED" } } }, "then": { "required": ["reason"] } },
+    { "if": { "required": ["reason"], "properties": { "reason": { "const": "unclear" } } }, "then": { "required": ["questions"] } },
+    { "if": { "required": ["reason"], "properties": { "reason": { "const": "needs_approval" } } }, "then": { "required": ["manifest"] } },
+    { "if": { "required": ["reason"], "properties": { "reason": { "const": "out_of_policy" } } }, "then": { "required": ["violates"] } },
+    { "if": { "required": ["reason"], "properties": { "reason": { "const": "over_budget" } } }, "then": { "required": ["estimate"] } },
+    { "if": { "properties": { "status": { "const": "ACCEPTED" } } }, "then": { "required": ["digest", "receipt"] } },
+    { "if": { "properties": { "status": { "enum": ["COMPLETED", "PARTIAL"] } } }, "then": { "required": ["digest", "checks", "answer", "usage"] } },
+    { "if": { "properties": { "status": { "enum": ["INDETERMINATE"] } } }, "then": { "required": ["digest", "checks", "usage"] } },
+    { "if": { "properties": { "status": { "const": "NOT_FOUND" } } }, "then": { "required": ["digest", "missing"] } },
+    { "if": { "properties": { "status": { "const": "FAILED" } } }, "then": { "required": ["digest", "failure"] } },
+    { "if": { "properties": { "status": { "not": { "enum": ["COMPLETED", "PARTIAL"] } } } }, "then": { "not": { "required": ["answer"] } } }
+  ],
+
+  "$defs": {
+    "checkStatus": { "enum": ["pass", "fail", "indeterminate"] }
+  }
+}

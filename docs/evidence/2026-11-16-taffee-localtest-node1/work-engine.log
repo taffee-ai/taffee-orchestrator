@@ -1,0 +1,14 @@
+   Compiling taffee-orchestrator v0.1.0 (/src/runner)
+    Finished `release` profile [optimized] target(s) in 13.41s
+     Running tests/work_test.rs (/work/target/release/deps/work_test-84efae106b51dc58)
+
+running 6 tests
+test a_missing_symbol_is_not_found_before_any_work ... ok
+test a_plan_that_overspends_falls_back_to_one_worker ... ok
+test a_planned_run_splits_into_narrowed_workers ... ok
+test a_sentence_runs_to_a_checked_answer ... ok
+test a_worker_that_invents_a_line_fails_the_checks ... ok
+test http_dry_run_then_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+

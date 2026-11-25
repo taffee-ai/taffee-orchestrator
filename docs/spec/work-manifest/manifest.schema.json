@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:taffee:work-manifest:0.1:manifest",
+  "title": "Work manifest 0.1",
+  "description": "A request for work. Sparse when sent; frozen (has `digest`) when it may run. Field order in this schema is the presentation order: people fields, code fields, handling fields.",
+  "type": "object",
+  "required": ["manifest"],
+  "anyOf": [{ "required": ["want"] }, { "required": ["kind"] }],
+  "properties": {
+    "manifest": { "const": "0.1" },
+
+    "by": { "$ref": "#/$defs/principal", "description": "Authenticated principal. Set by the orchestrator when absent (WM-REQ-03)." },
+    "for": { "type": "array", "items": { "$ref": "#/$defs/principal" }, "minItems": 1, "description": "On whose behalf, oldest first. Set when an orchestrator delegates (WM-DLG-01)." },
+    "said": { "type": "string", "maxLength": 8000, "description": "The caller's original `want`, verbatim. Written only by the normalizer (WM-NRM-03)." },
+    "want": { "type": "string", "minLength": 1, "maxLength": 8000, "description": "The outcome. Caller's words when sparse; the kind's restatement when frozen (WM-NRM-11)." },
+    "why": { "type": "string", "maxLength": 2000 },
+    "given": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/ref" }
+    },
+    "done_when": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "limits": { "$ref": "#/$defs/limits" },
+    "assumed": {
+      "type": "object",
+      "description": "Field path → what was interpreted and why (WM-NRM-02).",
+      "propertyNames": { "pattern": "^[a-z_][a-z0-9_]*(\\.[a-z0-9_]+)*$" },
+      "additionalProperties": { "type": "string", "maxLength": 500 }
+    },
+
+    "kind": { "$ref": "#/$defs/ref" },
+    "parameters": { "type": "object" },
+    "decide": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/id" }
+    },
+    "deliver": {
+      "type": "object",
+      "required": ["schema"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "$ref": "#/$defs/ref" },
+        "order": { "type": "array", "items": { "type": "string" } },
+        "equivalence": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "requires": { "$ref": "#/$defs/checkMap" },
+    "checks": { "$ref": "#/$defs/checkMap" },
+    "partial_ok": { "type": "boolean" },
+    "delegation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "depth": { "type": "integer", "minimum": 0, "maximum": 8 } }
+    },
+    "parent": { "$ref": "#/$defs/digest" },
+
+    "if_unclear": { "enum": ["assume", "refuse"] },
+    "approved": { "$ref": "#/$defs/effects" },
+    "dry_run": { "type": "boolean" },
+    "reply": { "enum": ["wait", "receipt"] },
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+
+    "digest": { "$ref": "#/$defs/digest" }
+  },
+  "patternProperties": { "^x-": true },
+  "additionalProperties": false,
+
+  "if": { "required": ["digest"] },
+  "then": {
+    "description": "Frozen form (WM-FRZ-01, WM-FRZ-03).",
+    "required": ["manifest", "by", "want", "given", "kind", "parameters", "decide", "deliver", "requires", "done_when", "checks", "limits", "partial_ok", "delegation"],
+    "properties": {
+      "given": { "additionalProperties": { "$ref": "#/$defs/pinnedRef" } },
+      "kind": { "$ref": "#/$defs/pinnedRef" },
+      "deliver": { "properties": { "schema": { "$ref": "#/$defs/pinnedRef" } } },
+      "limits": { "required": ["effects", "usd", "time"] }
+    }
+  },
+
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$" },
+    "principal": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*:[^\\s]{1,200}$", "examples": ["user:alice", "service:ci-bot", "orchestrator:taffee-a"] },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "ref": {
+      "type": "string",
+      "description": "name[@version][#sha256:hex]. The name is everything before the last '@'.",
+      "pattern": "^[^\\s@#]+(@[^\\s@#]+)?(#sha256:[0-9a-f]{64})?$"
+    },
+    "pinnedRef": {
+      "type": "string",
+      "description": "Immutable: the version is a full commit id, or the reference carries a content digest.",
+      "pattern": "^[^\\s@#]+(@([0-9a-f]{40}|[0-9a-f]{64})(#sha256:[0-9a-f]{64})?|(@[^\\s@#]+)?#sha256:[0-9a-f]{64})$"
+    },
+    "effects": { "enum": ["read-only", "reversible", "irreversible"] },
+    "duration": { "type": "string", "pattern": "^[1-9][0-9]*(s|m|h)$" },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "effects": { "$ref": "#/$defs/effects" },
+        "usd": { "type": "number", "minimum": 0 },
+        "time": { "$ref": "#/$defs/duration" },
+        "tokens": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "check": {
+      "oneOf": [
+        { "type": "string", "minLength": 1, "description": "CEL expression (WM-CHK-02)." },
+        {
+          "type": "object",
+          "required": ["verifier"],
+          "additionalProperties": false,
+          "properties": { "verifier": { "$ref": "#/$defs/pinnedRef" } }
+        }
+      ]
+    },
+    "checkMap": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id", "not": { "const": "deliver" } },
+      "additionalProperties": { "$ref": "#/$defs/check" }
+    }
+  }
+}

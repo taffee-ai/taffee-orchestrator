@@ -1,0 +1,47 @@
+# The general kind: any task that finds things out (research, analysis, comparison, writing),
+# in the caller's words. Validates against ../kind.schema.json. The worker may call anything:
+# any web API, any model through the gateway, helper agents. It declares read-only work: it
+# does not change anything in the world. Tasks that do are task.act@1.
+kind: "0.1"
+id: task.general@1
+summary: Any task that finds things out (research, analysis, comparison, writing, answering) in the caller's words, done by an agent that may call any web API, any model and helper agents. Does not change anything in the world.
+want_template: "{task}"
+
+given: {}
+
+parameters:
+  type: object
+  required: [task]
+  additionalProperties: false
+  properties:
+    task: { type: string, minLength: 1, description: The task, in the caller's words }
+
+deliver:
+  schema:
+    type: object
+    required: [answer]
+    additionalProperties: true
+    properties:
+      answer: { type: string, minLength: 1, description: "The result, in Markdown, and anything that could not be found" }
+      sources:
+        type: array
+        items:
+          type: object
+          required: [url]
+          additionalProperties: true
+          properties:
+            url:   { type: string }
+            title: { type: string }
+            quote: { type: string, description: Words from the source that support the answer }
+
+requires: {}
+
+done_when:
+  answered: The answer is not empty
+
+checks:
+  answered: "answer.answer.size() > 0"
+
+limits: { effects: read-only, usd: 1.00, time: 15m }
+partial_ok: false
+delegation: { depth: 0 }

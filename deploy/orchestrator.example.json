@@ -1,0 +1,35 @@
+{
+  "max_agents": 200,
+  "memory_limit_mb": 64,
+  "turn_timeout_secs": 120,
+  "idle_ttl_secs": 900,
+  "default_spec": {
+    "model": {
+      "provider": "bedrock",
+      "modelId": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+      "region": "us-east-1",
+      "endpoint": "https://bedrock-runtime.us-east-1.amazonaws.com"
+    },
+    "limits": { "turns": 20, "totalTokens": 200000, "toolOutputChars": 16000 },
+    "mcpServers": [{ "name": "context", "url": "http://mcp:8765/mcp" }]
+  },
+  "egress": { "allow": [] },
+  "credentials": [
+    {
+      "kind": "aws_sigv4",
+      "name": "bedrock",
+      "destination": "https://bedrock-runtime.us-east-1.amazonaws.com",
+      "region": "us-east-1",
+      "service": "bedrock",
+      "access_key_id_env": "AWS_ACCESS_KEY_ID",
+      "secret_access_key_env": "AWS_SECRET_ACCESS_KEY",
+      "session_token_env": "AWS_SESSION_TOKEN"
+    },
+    {
+      "kind": "bearer",
+      "name": "context-mcp",
+      "destination": "http://mcp:8765",
+      "token_env": "TAFFEE_MCP_TOKEN"
+    }
+  ]
+}

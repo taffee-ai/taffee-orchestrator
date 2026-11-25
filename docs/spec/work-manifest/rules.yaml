@@ -1,0 +1,141 @@
+# Work manifest 0.1: every rule, one line each.
+#   level   MUST: conformance requires it. SHOULD: measured and reported, not gating.
+#   proof   vectors: the listed vectors must pass. schema: enforced by a schema in this folder.
+#           audit: shown by the orchestrator's own run record; no external vector can observe it.
+spec: work-manifest
+version: "0.1"
+rules:
+  # ── request ──
+  - { id: WM-REQ-01, level: MUST, proof: vectors, vectors: [N-03, R-05],
+      text: "A request is one manifest and gets one reply. Finishing a request never needs another message from the caller." }
+  - { id: WM-REQ-02, level: MUST, proof: schema, vectors: [N-01, N-02],
+      text: "A caller sends `manifest` and at least one of `want` or `kind`. Everything else is optional." }
+  - { id: WM-REQ-03, level: MUST, proof: vectors, vectors: [N-01, R-07],
+      text: "`by` is the authenticated principal. The orchestrator sets it when absent, and refuses (invalid) when it differs." }
+  - { id: WM-REQ-04, level: MUST, proof: vectors, vectors: [N-08, N-09],
+      text: "Unknown fields are refused (invalid). `x-*` fields are ignored, left out of the digest and never affect the work." }
+  - { id: WM-REQ-05, level: SHOULD, proof: audit,
+      text: "The same `by` and `id` sent again gets the same reply." }
+
+  # ── normalization ──
+  - { id: WM-NRM-01, level: MUST, proof: vectors, vectors: [N-01, N-02],
+      text: "A normalized manifest validates against manifest.schema.json and the kind's parameter schema." }
+  - { id: WM-NRM-02, level: MUST, proof: vectors, vectors: [N-01, N-02, N-06],
+      text: "Every interpretation goes in `assumed`, keyed by the field it set: a kind chosen from free text, a value not copied verbatim from the caller, a resolved reference, a default lowered by policy. Kind defaults are not interpretations." }
+  - { id: WM-NRM-03, level: MUST, proof: vectors, vectors: [N-01],
+      text: "When `want` is restated, the caller's text is kept verbatim in `said`. Only the normalizer writes `said`." }
+  - { id: WM-NRM-04, level: MUST, proof: vectors, vectors: [N-04, N-05],
+      text: "The normalizer never changes a value the caller set, except restating `want` (WM-NRM-11)." }
+  - { id: WM-NRM-05, level: MUST, proof: vectors, vectors: [N-01, N-02],
+      text: "Every `given` is resolved to a pinned reference." }
+  - { id: WM-NRM-06, level: MUST, proof: vectors, vectors: [R-09],
+      text: "If no kind fits, the reply is REFUSED unsupported." }
+  - { id: WM-NRM-07, level: MUST, proof: vectors, vectors: [R-02, R-03],
+      text: "A gap (a required value with none in the request, no kind default and no single resolution) is REFUSED unclear, whatever `if_unclear` says." }
+  - { id: WM-NRM-08, level: MUST, proof: vectors, vectors: [R-01],
+      text: "With `if_unclear: refuse`, any `assumed` entry other than pinning a version the caller named is REFUSED unclear. The reply includes the manifest that would have run." }
+  - { id: WM-NRM-09, level: MUST, proof: vectors, vectors: [R-01, R-02],
+      text: "Each question names its field, and lists options when there is a finite set." }
+  - { id: WM-NRM-10, level: MUST, proof: vectors, vectors: [N-01],
+      text: "Every reply produced after normalization names the normalizer (`normalized_by`)." }
+  - { id: WM-NRM-11, level: MUST, proof: vectors, vectors: [N-01, N-02],
+      text: "Once a kind is chosen, `want` is the kind's `want_template` filled in from the parameters." }
+  - { id: WM-NRM-12, level: MUST, proof: vectors, vectors: [N-07],
+      text: "Every `decide` value is one of the kind's options; otherwise REFUSED invalid." }
+  - { id: WM-NRM-13, level: SHOULD, proof: vectors, vectors: [N-02, N-03, N-09],
+      text: "Requests that mean the same work normalize to the same digest." }
+
+  # ── narrowing ──
+  - { id: WM-NAR-01, level: MUST, proof: vectors, vectors: [N-04],
+      text: "The frozen `requires` and `checks` are the kind's plus any the caller added. None are removed." }
+  - { id: WM-NAR-02, level: MUST, proof: vectors, vectors: [N-06],
+      text: "A limit the caller did not set takes the kind default, lowered to the principal's policy maximum if above it, and the lowering is recorded in `assumed`." }
+  - { id: WM-NAR-03, level: MUST, proof: vectors, vectors: [N-05],
+      text: "A limit the caller set above the policy maximum is REFUSED out_of_policy, with a `counter` manifest." }
+
+  # ── freezing ──
+  - { id: WM-FRZ-01, level: MUST, proof: vectors, vectors: [N-01, R-05],
+      text: "A manifest is frozen when it has a `digest`. Only frozen manifests run." }
+  - { id: WM-FRZ-02, level: MUST, proof: vectors, vectors: [N-02, N-03, N-04, N-09],
+      text: "digest = sha256 of the RFC 8785 (JCS) form of the work fields: manifest, want, why, given, kind, parameters, decide, deliver, requires, done_when, checks, limits, partial_ok, delegation, parent." }
+  - { id: WM-FRZ-03, level: MUST, proof: schema, vectors: [N-01],
+      text: "In a frozen manifest, every `given`, the `kind`, `deliver.schema` and every verifier is pinned." }
+  - { id: WM-FRZ-04, level: MUST, proof: vectors, vectors: [X-01],
+      text: "A frozen manifest runs without a registry lookup. References are fetched by digest." }
+  - { id: WM-FRZ-05, level: MUST, proof: audit,
+      text: "The outer plan receives exactly the work fields. It never receives `by`, `for`, `said`, `assumed` or the handling fields." }
+  - { id: WM-FRZ-06, level: MUST, proof: vectors, vectors: [N-01, N-04],
+      text: "`done_when` and `checks` have the same ids." }
+  - { id: WM-FRZ-07, level: MUST, proof: vectors, vectors: [R-06, N-03],
+      text: "A received frozen manifest has its digest recomputed (a mismatch is REFUSED invalid) and is never modified. If policy would require a change, the reply is REFUSED out_of_policy with a `counter`." }
+
+  # ── handling ──
+  - { id: WM-HND-01, level: MUST, proof: vectors, vectors: [N-01, R-04],
+      text: "`if_unclear` defaults to `assume` when `limits.effects` is read-only, and to `refuse` otherwise." }
+  - { id: WM-HND-02, level: MUST, proof: vectors, vectors: [R-04],
+      text: "`approved` defaults to read-only." }
+  - { id: WM-HND-03, level: MUST, proof: vectors, vectors: [R-04],
+      text: "If `limits.effects` is above `approved`, the reply is REFUSED needs_approval with the frozen manifest. The orchestrator never waits." }
+  - { id: WM-HND-04, level: MUST, proof: vectors, vectors: [N-01],
+      text: "`dry_run: true` returns READY with the frozen manifest. Nothing runs, and nothing outside the orchestrator changes." }
+  - { id: WM-HND-05, level: MUST, proof: vectors, vectors: [R-05],
+      text: "A frozen manifest sent back with `approved` at or above its effects runs exactly as it is." }
+  - { id: WM-HND-06, level: MUST, proof: vectors, vectors: [R-11],
+      text: "`reply: receipt` returns ACCEPTED with a receipt. The final reply is the same document `wait` would have returned." }
+  - { id: WM-HND-07, level: MUST, proof: vectors, vectors: [R-08],
+      text: "If the orchestrator estimates cost before running and the estimate exceeds `limits`, the reply is REFUSED over_budget with the `estimate`." }
+  - { id: WM-HND-08, level: MUST, proof: vectors, vectors: [R-10],
+      text: "Effects above the principal's policy maximum are REFUSED out_of_policy, whatever `approved` says." }
+
+  # ── checks ──
+  - { id: WM-CHK-01, level: MUST, proof: schema,
+      text: "A check is a CEL expression or a pinned verifier." }
+  - { id: WM-CHK-02, level: MUST, proof: vectors, vectors: [X-01, X-03, X-05],
+      text: "CEL checks see answer, coverage, given, parameters and usage, plus the kind's functions. true passes, false fails, and an error or unavailable function is indeterminate." }
+  - { id: WM-CHK-03, level: MUST, proof: vectors, vectors: [X-03],
+      text: "The orchestrator evaluates every check. What a worker says about its own success is ignored." }
+  - { id: WM-CHK-04, level: SHOULD, proof: schema,
+      text: "A check decided by a verifier records that verifier's pinned reference in the reply." }
+  - { id: WM-CHK-05, level: MUST, proof: vectors, vectors: [X-07],
+      text: "Every manifest has an implicit check, `deliver`: the answer validates against `deliver.schema`." }
+
+  - { id: WM-CHK-06, level: MUST, proof: vectors, vectors: [X-02],
+      text: "If the kind declares `coverage`, the orchestrator computes it from the pinned inputs and the files the workers report searching. A worker's own totals are ignored." }
+
+  # ── result ──
+  - { id: WM-RES-01, level: MUST, proof: schema,
+      text: "`status` is one of: READY, REFUSED, ACCEPTED, COMPLETED, PARTIAL, NOT_FOUND, INDETERMINATE, FAILED, CANCELED." }
+  - { id: WM-RES-02, level: MUST, proof: vectors, vectors: [X-01, X-02, X-03, X-04, X-05, X-07],
+      text: "In this order: a false `requires` gives NOT_FOUND; all checks passing gives COMPLETED; `deliver` failing gives FAILED; `partial_ok` gives PARTIAL; any check failing gives FAILED; otherwise INDETERMINATE." }
+  - { id: WM-RES-03, level: MUST, proof: schema, vectors: [X-03, X-04, X-05],
+      text: "`answer` is present only with COMPLETED or PARTIAL." }
+  - { id: WM-RES-04, level: MUST, proof: vectors, vectors: [X-04],
+      text: "NOT_FOUND lists the ids of the false `requires` in `missing`." }
+  - { id: WM-RES-05, level: MUST, proof: vectors, vectors: [X-03, X-06],
+      text: "FAILED carries `failure.code`: checks_failed, timeout, budget_exhausted, input_unavailable, effect_denied or internal." }
+  - { id: WM-RES-06, level: MUST, proof: vectors, vectors: [X-01],
+      text: "A reply for work that ran carries the digest, every check id plus `deliver`, and usage." }
+  - { id: WM-RES-07, level: MUST, proof: vectors, vectors: [N-01, R-01],
+      text: "A reply carries `assumed` whenever normalization recorded anything." }
+  - { id: WM-RES-08, level: MUST, proof: vectors, vectors: [X-01],
+      text: "Proposals are sparse manifests. The orchestrator does not run them on the strength of this request." }
+  - { id: WM-RES-09, level: SHOULD, proof: audit,
+      text: "Two COMPLETED replies for the same digest have answers that are equal under `deliver.equivalence`." }
+
+  # ── delegation ──
+  - { id: WM-DLG-01, level: MUST, proof: vectors, vectors: [D-01],
+      text: "A delegated manifest has `parent` set to the parent's digest, `by` set to the delegating orchestrator, and `for` set to the parent's `for` plus the parent's `by`." }
+  - { id: WM-DLG-02, level: MUST, proof: vectors, vectors: [D-02, D-05],
+      text: "Its limits fit within what the parent has left: usd, time, and effects no higher than the parent's. Its `approved` is no higher than the parent's." }
+  - { id: WM-DLG-03, level: MUST, proof: vectors, vectors: [D-04],
+      text: "Its `given` uses only the parent's pinned inputs, or outputs produced under the parent, pinned by digest." }
+  - { id: WM-DLG-04, level: MUST, proof: vectors, vectors: [D-01, D-03],
+      text: "A manifest sent to another orchestrator has a lower `delegation.depth` than its parent, and a parent with depth 0 can't be sent on. Worker manifests in the inner loop always have depth 0." }
+  - { id: WM-DLG-05, level: MUST, proof: vectors, vectors: [D-02, D-03, D-04, D-05],
+      text: "The delegating orchestrator checks WM-DLG-01 to 04 before sending. A violation isn't sent, and is reported with `violates`." }
+
+  # ── kinds ──
+  - { id: WM-KND-01, level: MUST, proof: schema,
+      text: "A kind id is namespace.name@major. A published version is immutable, and its digest is sha256 of its JCS form. Any change to its parameters, deliver, requires, checks, decide or defaults needs a new major." }
+  - { id: WM-KND-02, level: MUST, proof: schema,
+      text: "A kind validates against kind.schema.json." }

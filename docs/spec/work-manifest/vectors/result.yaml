@@ -1,0 +1,137 @@
+# assemble: frozen manifest + simulated work output → reply.
+# The orchestrator evaluates `requires` and `checks` itself against the fixture repository (context.yaml),
+# using only the manifest and fetched-by-digest content: no registry lookup (WM-FRZ-04).
+# `work.searched` is the files the workers say they searched; coverage is computed from it and the
+# fixture (WM-CHK-06).
+# `work.claims` is what the worker said about itself. It must never change the outcome (WM-CHK-03).
+stage: assemble
+shared:
+  full_answer: &full_answer
+    breaks:
+      - { file: src/api/routes.ts, line: 2, reason: import }
+      - { file: src/api/routes.ts, line: 14, reason: call }
+      - { file: src/billing/Invoice.ts, line: 5, reason: type }
+      - { file: src/payment/PaymentService.ts, line: 3, reason: declaration }
+      - { file: test/payment.test.ts, line: 1, reason: import }
+    mentions:
+      - { file: docs/README.md, line: 12, where: doc }
+      - { file: test/payment.test.ts, line: 9, where: string }
+  usage: &usage { usd: 0.12, time: 94s, model_calls: 9 }
+vectors:
+
+  - id: X-01
+    title: Every check passes; a follow-up is proposed, not run
+    rules: [WM-FRZ-04, WM-CHK-02, WM-RES-02, WM-RES-06, WM-RES-08]
+    manifest: { $from: N-01.manifest }
+    work:
+      answer: *full_answer
+      searched: [src/payment/PaymentService.ts, src/api/routes.ts, src/billing/Invoice.ts, src/db.ts, test/payment.test.ts, docs/README.md]
+      usage: *usage
+      proposals:
+        - manifest: "0.1"
+          want: Update docs/README.md to say PaymentGateway
+          why: Line 12 names the class
+    expect:
+      status: COMPLETED
+      digest: { $same: N-01.digest }
+      checks: { deliver: pass, cited: pass, on_target: pass, complete: pass }
+      answer: *full_answer
+      usage: $any
+      proposals:
+        - { manifest: "0.1", want: Update docs/README.md to say PaymentGateway, digest: $absent }
+
+  - id: X-02
+    title: A file was not searched; partial answers allowed
+    rules: [WM-CHK-06, WM-RES-02]
+    manifest: { $from: N-01.manifest, with: { partial_ok: true } }
+    work:
+      answer:
+        breaks:
+          - { file: src/api/routes.ts, line: 2, reason: import }
+          - { file: src/api/routes.ts, line: 14, reason: call }
+          - { file: src/payment/PaymentService.ts, line: 3, reason: declaration }
+          - { file: test/payment.test.ts, line: 1, reason: import }
+        mentions:
+          - { file: docs/README.md, line: 12, where: doc }
+      searched: [src/payment/PaymentService.ts, src/api/routes.ts, src/db.ts, test/payment.test.ts, docs/README.md]
+      usage: *usage
+    expect:
+      status: PARTIAL
+      checks: { deliver: pass, cited: pass, on_target: pass, complete: fail }
+      coverage: { searched: 5, total: 6, missed: [src/billing/Invoice.ts] }
+      answer: $any
+
+  - id: X-03
+    title: The worker cites a line that does not exist and claims success; partial answers not allowed
+    rules: [WM-CHK-02, WM-CHK-03, WM-RES-02, WM-RES-03, WM-RES-05]
+    manifest: { $from: N-01.manifest }
+    work:
+      answer:
+        breaks:
+          - { file: src/api/routes.ts, line: 2, reason: import }
+          - { file: src/api/routes.ts, line: 99, reason: call }      # routes.ts has 60 lines
+        mentions: []
+      searched: [src/payment/PaymentService.ts, src/api/routes.ts, src/billing/Invoice.ts, src/db.ts, test/payment.test.ts, docs/README.md]
+      usage: *usage
+      claims: { status: COMPLETED }
+    expect:
+      status: FAILED
+      failure: { code: checks_failed }
+      checks: { deliver: pass, cited: fail, on_target: fail, complete: pass }
+      answer: $absent
+
+  - id: X-04
+    title: The symbol is not declared at the pinned commit
+    rules: [WM-RES-02, WM-RES-03, WM-RES-04]
+    manifest:
+      $from: N-01.manifest
+      with:
+        parameters: { symbol: PaymentSvc, rename_to: PaymentGateway, paths: ["**"] }
+        want: Every place that breaks if PaymentSvc is renamed to PaymentGateway
+    work: none                        # requires is evaluated before any work starts
+    expect:
+      status: NOT_FOUND
+      missing: [declared]
+      answer: $absent
+
+  - id: X-05
+    title: A check function is unavailable; nothing failed, but not everything could be checked
+    rules: [WM-CHK-02, WM-RES-02, WM-RES-03]
+    context: { unavailable_functions: [line_mentions] }
+    manifest: { $from: N-01.manifest }
+    work:
+      answer: *full_answer
+      searched: [src/payment/PaymentService.ts, src/api/routes.ts, src/billing/Invoice.ts, src/db.ts, test/payment.test.ts, docs/README.md]
+      usage: *usage
+    expect:
+      status: INDETERMINATE
+      checks: { deliver: pass, cited: pass, on_target: indeterminate, complete: pass }
+      answer: $absent
+
+  - id: X-06
+    title: The work hit its time limit
+    rules: [WM-RES-05]
+    manifest: { $from: N-01.manifest }
+    work:
+      failure: timeout
+      usage: { usd: 0.31, time: 10m, model_calls: 22 }
+    expect:
+      status: FAILED
+      failure: { code: timeout }
+      answer: $absent
+
+  - id: X-07
+    title: The answer does not fit the deliver schema; partial answers allowed, still failed
+    rules: [WM-CHK-05, WM-RES-02]
+    manifest: { $from: N-01.manifest, with: { partial_ok: true } }
+    work:
+      answer:
+        breaks: [ { file: src/api/routes.ts, line: 2, reason: maybe } ]
+        mentions: []
+      searched: [src/payment/PaymentService.ts, src/api/routes.ts, src/billing/Invoice.ts, src/db.ts, test/payment.test.ts, docs/README.md]
+      usage: *usage
+    expect:
+      status: FAILED
+      failure: { code: checks_failed }
+      checks: { deliver: fail }
+      answer: $absent

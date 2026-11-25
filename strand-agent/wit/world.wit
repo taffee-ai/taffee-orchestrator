@@ -1,0 +1,29 @@
+package taffee:agent@0.1.0;
+
+/// The guest contract every taffee-orchestrator agent implements, whatever language its loop
+/// is written in (see docs/guest-contract.md).
+///
+/// One component instance is one long-lived agent. The host calls `run-turn` once per user
+/// turn, never concurrently on the same instance. `input` and the return value are JSON
+/// strings. The first call carries the agent spec and binds it for the instance's lifetime.
+///
+/// The longer-term compatibility target is upstream's `strands:agent@0.1.0` resource
+/// (wit/agent.wit in github.com/strands-agents/sdk-typescript). This JSON surface stays deliberately
+/// narrow so it can be mapped onto that later.
+interface worker {
+  run-turn: func(input: string) -> string;
+}
+
+world strand-agent {
+  import wasi:clocks/monotonic-clock@0.2.10;
+  import wasi:clocks/wall-clock@0.2.10;
+  import wasi:random/random@0.2.10;
+  import wasi:cli/stdout@0.2.10;
+  import wasi:cli/stderr@0.2.10;
+  import wasi:cli/stdin@0.2.10;
+  import wasi:http/outgoing-handler@0.2.10;
+
+  // Not `export wasi:http/incoming-handler`: the componentize-js fetch event is one-shot per
+  // instance ("respondWith can't be called twice"), so it cannot serve a long-lived agent.
+  export worker;
+}

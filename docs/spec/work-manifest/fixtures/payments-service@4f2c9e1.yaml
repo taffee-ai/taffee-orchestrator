@@ -1,0 +1,33 @@
+# Test repository used by the vectors. The kind's functions are evaluated against this:
+#   line_exists(repo, file, line)          1 <= line <= files[file].lines
+#   line_mentions(repo, file, line, sym)   files[file].text[line] contains sym as a whole word (absent text: false)
+#   declared(repo, sym)                    sym is a key of declarations
+ref: github.com/acme/payments-service@4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e
+declarations:
+  PaymentService: src/payment/PaymentService.ts:3
+files:
+  src/payment/PaymentService.ts:
+    lines: 40
+    text:
+      3: "export class PaymentService {"
+  src/api/routes.ts:
+    lines: 60
+    text:
+      2: "import { PaymentService } from '../payment/PaymentService';"
+      14: "const payments = new PaymentService(db);"
+  src/billing/Invoice.ts:
+    lines: 30
+    text:
+      5: "  constructor(private payments: PaymentService) {}"
+  src/db.ts:
+    lines: 18
+    text: {}
+  test/payment.test.ts:
+    lines: 25
+    text:
+      1: "import { PaymentService } from '../src/payment/PaymentService';"
+      9: "describe('PaymentService', () => {"
+  docs/README.md:
+    lines: 20
+    text:
+      12: "PaymentService handles card payments and refunds."

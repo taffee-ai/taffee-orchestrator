@@ -1,0 +1,14 @@
+# Proposed service catalog entry for the taffee-core catalog: one file per pillar.
+version: 1
+pillar: orchestrator
+repo: taffee-orchestrator
+services:
+  - name: orchestrator
+    kind: service
+    compose_service: orchestrator
+    build: taffee-orchestrator/docker/Dockerfile   # from artifacts made by scripts/ci.sh
+    port: 8780
+    writes: false            # holds agent state in memory only; writes turn records to its own volume
+    needs: []                # optional: mcp (Context pillar) when agents use context tools
+    reaches: [model-endpoint, mcp]
+    guest_contract: taffee:agent/worker@0.1.0

@@ -1,0 +1,21 @@
+taffee-orchestrator
+Copyright 2026 TaffeeAI.com
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+The Taffee name, logos and the TaffeeAI.com domain are not covered by that licence
+(see TRADEMARKS.md in https://github.com/taffee-ai/taffee-core).
+
+Third-party software
+--------------------
+This repository does not include the following projects' code. It downloads them
+at build time, under their own licenses. The agent component and the runtime
+image built from this repository contain parts of them.
+
+- Strands Agents TypeScript SDK (strands-agents/harness-sdk), Apache-2.0.
+  Bundled into the agent component.
+- ComponentizeJS and StarlingMonkey (Bytecode Alliance), Apache-2.0.
+  StarlingMonkey embeds SpiderMonkey (Mozilla), MPL-2.0.
+- AWS SDK for JavaScript (Bedrock Runtime client), Apache-2.0.
+- Wasmtime 49 (Bytecode Alliance), Apache-2.0 WITH LLVM-exception.
+- Rust crates including tokio, axum, cel and jsonschema, MIT or Apache-2.0;
+  see runner/Cargo.lock for the full list.

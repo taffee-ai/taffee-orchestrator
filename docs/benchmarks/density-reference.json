@@ -1,0 +1,135 @@
+{
+  "benchmark": "density",
+  "doc": "docs/benchmarks/density.md",
+  "rerun": "scripts/bench-density.sh",
+  "tolerance": {
+    "pss_mb": 0.2,
+    "marginal_pss_mb_per_agent": 0.2
+  },
+  "runs": [
+    {
+      "label": "node1",
+      "date_utc": "2026-11-22T21:13:07Z",
+      "hardware": "Intel Core i5-2520M (2 cores, 4 threads), 5.7 GB RAM, Ubuntu 20.04, Docker Engine",
+      "conditions": "native Linux; other services running, mostly idle",
+      "kernel": "Linux 5.15.0-139-generic x86_64",
+      "cpu": "Intel(R) Core(TM) i5-2520M CPU @ 2.50GHz",
+      "mem_total_mb": 5801,
+      "evidence": "docs/evidence/2026-11-22-density-taffee-localtest-node1",
+      "component_sha256": "fa3312339398cbab07ff5e8a3c6237d072eb4a06332660396d3f47aea375ae95",
+      "result": {
+        "component_bytes": 36139111,
+        "levels": [
+          {
+            "agents": 1,
+            "first_turn_cpu_ms_total": 80.0,
+            "marginal_pss_mb_per_agent": null,
+            "mem_available_mb": 3993,
+            "private_dirty_mb": 28.32421875,
+            "pss_mb": 39.6767578125,
+            "rss_mb": 40.9140625,
+            "second_turn_cpu_ms_per_agent": 40.0
+          },
+          {
+            "agents": 10,
+            "first_turn_cpu_ms_total": 840.0,
+            "marginal_pss_mb_per_agent": 4.200520833333333,
+            "mem_available_mb": 3969,
+            "private_dirty_mb": 58.69140625,
+            "pss_mb": 77.4814453125,
+            "rss_mb": 144.08203125,
+            "second_turn_cpu_ms_per_agent": 49.0
+          },
+          {
+            "agents": 50,
+            "first_turn_cpu_ms_total": 4000.0,
+            "marginal_pss_mb_per_agent": 4.238839285714286,
+            "mem_available_mb": 3776,
+            "private_dirty_mb": 228.53125,
+            "pss_mb": 247.3798828125,
+            "rss_mb": 610.17578125,
+            "second_turn_cpu_ms_per_agent": 48.6
+          },
+          {
+            "agents": 100,
+            "first_turn_cpu_ms_total": 4770.0,
+            "marginal_pss_mb_per_agent": 4.369633838383838,
+            "mem_available_mb": 3533,
+            "private_dirty_mb": 453.421875,
+            "pss_mb": 472.2705078125,
+            "rss_mb": 1204.2421875,
+            "second_turn_cpu_ms_per_agent": 50.6
+          }
+        ],
+        "load_ms": 284.887438,
+        "pss_after_load_mb": 11.3642578125,
+        "pss_before_load_mb": 4.8681640625,
+        "sequential_cpu_ms_per_turn": 55.5,
+        "sequential_wall_ms_per_turn": 56.8801237,
+        "stopped_early": null
+      }
+    },
+    {
+      "label": "node2",
+      "date_utc": "2026-11-22T21:14:56Z",
+      "hardware": "Intel Core i3-1000NG4 (2 cores, 4 threads), 16 GB RAM, macOS 15, Docker Desktop VM with 4 vCPUs and 8 GB",
+      "conditions": "Linux VM; about a dozen other containers running",
+      "kernel": "Linux 7.0.14-linuxkit x86_64",
+      "cpu": "Intel(R) Core(TM) i3-1000NG4 CPU @ 1.10GHz",
+      "mem_total_mb": 7938,
+      "evidence": "docs/evidence/2026-11-22-density-taffee-localtest-node2",
+      "component_sha256": "23ddad15afffbfc757a61ec1a7b8fe01d193be876c73e39cf60550d14515e405",
+      "result": {
+        "component_bytes": 36139138,
+        "levels": [
+          {
+            "agents": 1,
+            "first_turn_cpu_ms_total": 50.0,
+            "marginal_pss_mb_per_agent": null,
+            "mem_available_mb": 4063,
+            "private_dirty_mb": 8.48828125,
+            "pss_mb": 39.7138671875,
+            "rss_mb": 41.0625,
+            "second_turn_cpu_ms_per_agent": 30.0
+          },
+          {
+            "agents": 10,
+            "first_turn_cpu_ms_total": 2290.0,
+            "marginal_pss_mb_per_agent": 4.584201388888889,
+            "mem_available_mb": 4041,
+            "private_dirty_mb": 49.69140625,
+            "pss_mb": 80.9716796875,
+            "rss_mb": 146.46484375,
+            "second_turn_cpu_ms_per_agent": 48.0
+          },
+          {
+            "agents": 50,
+            "first_turn_cpu_ms_total": 12330.0,
+            "marginal_pss_mb_per_agent": 4.505261479591836,
+            "mem_available_mb": 3835,
+            "private_dirty_mb": 229.19140625,
+            "pss_mb": 260.4716796875,
+            "rss_mb": 611.48828125,
+            "second_turn_cpu_ms_per_agent": 52.6
+          },
+          {
+            "agents": 100,
+            "first_turn_cpu_ms_total": 15360.0,
+            "marginal_pss_mb_per_agent": 4.6330097853535355,
+            "mem_available_mb": 3568,
+            "private_dirty_mb": 467.1015625,
+            "pss_mb": 498.3818359375,
+            "rss_mb": 1207.265625,
+            "second_turn_cpu_ms_per_agent": 60.7
+          }
+        ],
+        "load_ms": 109.41386899999999,
+        "pss_after_load_mb": 11.2763671875,
+        "pss_before_load_mb": 4.6787109375,
+        "sequential_cpu_ms_per_turn": 45.5,
+        "sequential_wall_ms_per_turn": 46.4582275,
+        "stopped_early": null
+      }
+    }
+  ]
+}

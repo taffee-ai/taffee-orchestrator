@@ -1,0 +1,43 @@
+   Compiling taffee-orchestrator v0.1.0 (/src/runner)
+    Finished `release` profile [optimized] target(s) in 8.73s
+     Running tests/conformance.rs (/work/target/release/deps/conformance-8b599d9c93d05fd5)
+
+running 1 test
+test conformance_vectors ... PASS N-01  A person sends one sentence; a dry run returns the frozen manifest
+PASS N-02  A program sends kind and parameters; the same work gets the same digest
+PASS N-03  Another orchestrator forwards the frozen manifest; nothing is reinterpreted
+PASS N-04  The caller adds a check and picks a decide option; the kind's checks stay
+PASS N-05  The caller sets a budget above its policy; refused with a counter, not silently lowered
+PASS N-06  A kind default above the principal's policy is lowered and recorded
+PASS N-07  A decide value that is not one of the kind's options
+PASS N-08  An unknown field is refused
+PASS N-09  An x- field is ignored and does not change the digest
+PASS R-01  if_unclear refuse; a short repository name needed resolving
+PASS R-02  The repository name matches two repositories; refused even with assume
+PASS R-03  No repository given at all
+PASS R-04  Reversible work with no approval; refused with the manifest to confirm
+PASS R-05  The caller confirms by sending the frozen manifest back with approval
+PASS R-06  A frozen manifest whose digest does not match its content
+PASS R-07  by names someone other than the authenticated principal
+PASS R-08  The cost estimate exceeds the budget
+PASS R-09  No kind fits
+PASS R-10  Irreversible work above the principal's policy, even though approved
+PASS R-11  reply receipt; accepted now, final reply fetched later
+PASS X-01  Every check passes; a follow-up is proposed, not run
+PASS X-02  A file was not searched; partial answers allowed
+PASS X-03  The worker cites a line that does not exist and claims success; partial answers not allowed
+PASS X-04  The symbol is not declared at the pinned commit
+PASS X-05  A check function is unavailable; nothing failed, but not everything could be checked
+PASS X-06  The work hit its time limit
+PASS X-07  The answer does not fit the deliver schema; partial answers allowed, still failed
+PASS D-01  A narrower child within what the parent has left
+PASS D-02  The child's budget is more than the parent has left
+PASS D-03  The parent allows no further hand-off
+PASS D-04  The child names an input the parent never had
+PASS D-05  The child asks for effects the parent does not have
+
+vectors: 32 passed, 0 failed; rules proved by vectors: 47, not proved: []
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+

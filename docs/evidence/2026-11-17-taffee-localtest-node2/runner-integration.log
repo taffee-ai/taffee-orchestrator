@@ -1,0 +1,27 @@
+   Compiling taffee-orchestrator v0.1.0 (/src/runner)
+    Finished `release` profile [optimized] target(s) in 2m 29s
+     Running tests/integration_test.rs (/work/target/release/deps/integration_test-69c4010ccb025005)
+
+running 19 tests
+test agents_keep_history_and_are_isolated ... ok
+test calculator_tool_roundtrip ... ok
+test capacity_is_enforced_and_released ... ok
+test cpu_bound_guest_is_preempted_and_does_not_starve_others ... ok
+test egress_to_unlisted_destination_is_denied_and_recorded ... ok
+test failed_turn_rolls_back_history ... ok
+test guest_past_its_memory_limit_is_removed ... ok
+test guest_sends_only_placeholder_credentials ... ok
+test host_resigns_model_calls_with_sigv4 ... ok
+test http_api_end_to_end ... ok
+test idle_agents_are_evicted ... ok
+test mcp_tools_work_with_host_injected_token ... ok
+test mcp_without_credential_fails_the_spec_cleanly ... ok
+test non_js_guest_implementing_the_contract_runs ... ok
+test sdk_turn_limit_stops_a_runaway_tool_loop ... ok
+test second_concurrent_turn_on_one_agent_is_busy ... ok
+test seeded_history_and_system_prompt_reach_the_model ... ok
+test turn_deadline_removes_the_agent ... ok
+test turn_records_hold_no_content ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.66s
+

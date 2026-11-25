@@ -1,0 +1,160 @@
+# admit: request → REFUSED, ACCEPTED, or { runs: true, digest } (what would run; the work itself is not simulated).
+stage: admit
+vectors:
+
+  - id: R-01
+    title: if_unclear refuse; a short repository name needed resolving
+    rules: [WM-NRM-08, WM-NRM-09, WM-RES-07]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: payments-service@main }
+      if_unclear: refuse
+    expect:
+      status: REFUSED
+      reason: unclear
+      violates: [WM-NRM-08]
+      assumed: { given.repo: $any }
+      questions:
+        - field: given.repo
+          question: $any
+          options: [github.com/acme/payments-service@main]
+      manifest: { digest: { $same: N-02.digest } }   # the caller can confirm by sending this back
+
+  - id: R-02
+    title: The repository name matches two repositories; refused even with assume
+    rules: [WM-NRM-07, WM-NRM-09]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      want: what uses OrderRepo in billing? want to call it OrderStore
+    expect:
+      status: REFUSED
+      reason: unclear
+      violates: [WM-NRM-07]
+      questions:
+        - field: given.repo
+          question: $any
+          options: [github.com/acme/billing, github.com/acme/billing-legacy]
+
+  - id: R-03
+    title: No repository given at all
+    rules: [WM-NRM-07]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      want: What breaks if I rename PaymentService to PaymentGateway?
+    expect:
+      status: REFUSED
+      reason: unclear
+      questions: [ { field: given.repo, question: $any } ]
+
+  - id: R-04
+    title: Reversible work with no approval; refused with the manifest to confirm
+    rules: [WM-HND-01, WM-HND-02, WM-HND-03]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.rename@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+    expect:
+      status: REFUSED
+      reason: needs_approval
+      violates: [WM-HND-03]
+      manifest:
+        limits: { effects: reversible }
+        digest: $any
+
+  - id: R-05
+    title: The caller confirms by sending the frozen manifest back with approval
+    rules: [WM-REQ-01, WM-FRZ-01, WM-HND-05]
+    principal: service:ci-bot
+    request:
+      $from: R-04.manifest
+      with: { approved: reversible }
+    expect:
+      runs: true
+      digest: { $same: R-04.manifest.digest }   # `approved` is not in the digest
+
+  - id: R-06
+    title: A frozen manifest whose digest does not match its content
+    rules: [WM-FRZ-07]
+    principal: orchestrator:taffee-b
+    request:
+      $from: N-01.manifest
+      with:
+        by: orchestrator:taffee-b
+        for: ["user:alice"]
+        limits: { effects: read-only, usd: 0.90, time: 10m }   # changed after freezing
+        digest: { $same: N-01.digest }                           # old digest kept
+    expect:
+      status: REFUSED
+      reason: invalid
+      violates: [WM-FRZ-07]
+
+  - id: R-07
+    title: by names someone other than the authenticated principal
+    rules: [WM-REQ-03]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      by: user:alice
+      want: If I rename PaymentService to PaymentGateway in payments-service, what breaks?
+    expect:
+      status: REFUSED
+      reason: invalid
+      violates: [WM-REQ-03]
+
+  - id: R-08
+    title: The cost estimate exceeds the budget
+    rules: [WM-HND-07]
+    principal: user:alice
+    context: { estimate: { usd: 1.20, time: 6m } }
+    request:
+      manifest: "0.1"
+      want: If I rename PaymentService to PaymentGateway in payments-service, what breaks?
+    expect:
+      status: REFUSED
+      reason: over_budget
+      estimate: { usd: 1.20 }
+
+  - id: R-09
+    title: No kind fits
+    rules: [WM-NRM-06]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      want: Book me a flight to Lisbon on Friday
+    expect:
+      status: REFUSED
+      reason: unsupported
+
+  - id: R-10
+    title: Irreversible work above the principal's policy, even though approved
+    rules: [WM-HND-08]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      kind: ops.deploy@1
+      parameters: { service: payments, version: "2.4.1", environment: production }
+      approved: irreversible
+    expect:
+      status: REFUSED
+      reason: out_of_policy
+      violates: [WM-HND-08]
+
+  - id: R-11
+    title: reply receipt; accepted now, final reply fetched later
+    rules: [WM-HND-06]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      want: If I rename PaymentService to PaymentGateway in payments-service, what breaks? Need file and line.
+      reply: receipt
+    expect:
+      status: ACCEPTED
+      receipt: $any
+      digest: { $same: N-01.digest }

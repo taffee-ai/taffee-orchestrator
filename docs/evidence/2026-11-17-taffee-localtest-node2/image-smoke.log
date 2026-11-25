@@ -1,0 +1,16 @@
+--- unauthenticated:
+401
+--- create:
+ag-503959b7b5b844d7903e87fc796539b2
+--- turn 1:
+ok The calculation result is 42. 4 2 calls
+--- turn 2:
+ok 6
+--- stats:
+{"agents":{"active":1,"capacity":20,"created":1,"evicted_idle":0,"rejected_at_capacity":0,"removed_after_failure":0},"component":{"bytes":35769132,"core_instances":33,"initial_memory_mb":32,"load_ms":18045.751291999997,"memories":2},"egress":{"credentials":[],"via":null},"limits":{"idle_ttl_secs":900,"turn_timeout_secs":120},"process":{"private_dirty_mb":412.65625,"pss_mb":487.41015625,"rss_mb":487.4140625},"turns":{"failed":0,"ok":2,"timed_out":0},"uptime_secs":2}
+--- delete:
+204
+health: starting
+[2m2026-11-17T21:51:25.705913Z[0m [32m INFO[0m [2morchestratord[0m[2m:[0m starting orchestratord [3mcomponent[0m[2m=[0m/opt/taffee/agents/strand-agent.wasm [3mmax_agents[0m[2m=[0m20 [3mmemory_limit_mb[0m[2m=[0m64 [3mturn_timeout_secs[0m[2m=[0m120 [3mcredentials[0m[2m=[0m[] [3mapi_auth[0m[2m=[0mtrue
+[2m2026-11-17T21:51:43.752514Z[0m [32m INFO[0m [2morchestratord[0m[2m:[0m component ready [3mload_ms[0m[2m=[0m18045 [3mbytes[0m[2m=[0m35769132
+[2m2026-11-17T21:51:43.752988Z[0m [32m INFO[0m [2morchestratord[0m[2m:[0m listening on http://0.0.0.0:8780

@@ -1,0 +1,3 @@
+[submodule "upstream/strands-harness-sdk"]
+	path = upstream/strands-harness-sdk
+	url = https://github.com/strands-agents/harness-sdk.git

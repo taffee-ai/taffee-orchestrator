@@ -1,0 +1,49 @@
+    Finished `release` profile [optimized] target(s) in 1.35s
+     Running unittests src/lib.rs (/work/target/release/deps/taffee_orchestrator-bb8e6fccd607996a)
+
+running 42 tests
+test config::tests::credential_rules_resolve_secrets_from_env ... ok
+test egress::tests::allow_rules_parse_and_match ... ok
+test config::tests::unknown_fields_and_bad_values_are_rejected ... ok
+test config::tests::missing_secret_is_a_startup_error ... ok
+test egress::tests::bearer_injection_replaces_guest_authorization ... ok
+test egress::tests::credential_rule_debug_hides_secret ... ok
+test egress::tests::sigv4_injection_resigns_with_host_credentials ... ok
+test pool::tests::test_validate_component_memory_malformed_fails_closed ... ok
+test config::tests::tokens_file_format ... ok
+test egress::tests::denies_unlisted_destination_and_records_it ... ok
+test pool::tests::test_validate_component_memory_oversized_rejection ... ok
+test sigv4::tests::aws_suite_get_vanilla ... ok
+test sigv4::tests::canonical_query_sorts_and_encodes ... ok
+test sigv4::tests::amz_date_formats_known_instants ... ok
+test sigv4::tests::canonical_uri_double_encodes_segments ... ok
+test sigv4::tests::debug_redacts_secrets ... ok
+test spec::tests::authorities_normalize_case_and_default_ports ... ok
+test spec::tests::defaults_fill_only_unset_fields ... ok
+test pool::tests::test_create_pooled_engine ... ok
+test spec::tests::digest_ignores_seed_messages ... ok
+test spec::tests::validate_rejects_bad_specs ... ok
+test work::agents::tests::an_answer_written_out_as_json_text_is_read_as_the_object ... ok
+test work::context::tests::ambiguous_and_unknown_names_are_gaps ... ok
+test work::context::tests::pinning_a_named_version_is_not_a_guess ... ok
+test work::context::tests::resolves_short_name_and_default_version ... ok
+test work::engine::tests::merge_dedupes_and_orders ... ok
+test work::inputs::tests::declarations ... ok
+test work::inputs::tests::whole_word_mentions ... ok
+test work::jcs::tests::digest_shape ... ok
+test work::jcs::tests::numbers_follow_ecmascript ... ok
+test work::jcs::tests::rfc8785_key_order_uses_utf16_units ... ok
+test work::jcs::tests::sorts_keys_and_drops_whitespace ... ok
+test work::checks::tests::deliver_schema ... ok
+test work::jcs::tests::strings_escape_like_json_stringify ... ok
+test work::manifest::tests::digest_ignores_who_wording_and_handling ... ok
+test work::manifest::tests::durations ... ok
+test work::manifest::tests::needs_want_or_kind ... ok
+test work::manifest::tests::principals ... ok
+test work::checks::tests::cel_with_kind_functions ... ok
+test work::manifest::tests::unknown_fields_are_refused_and_x_fields_kept ... ok
+test work::refs::tests::parses_and_pins ... ok
+test pool::tests::test_validate_component_memory_real_artifact ... ok
+
+test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+

@@ -1,0 +1,33 @@
+test_chat_completions_tool_round_trip (test_server.TestMockBedrockServer.test_chat_completions_tool_round_trip) ... [17/Nov/2026 23:46:53] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+[17/Nov/2026 23:46:53] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+ok
+test_concurrent_requests (test_server.TestMockBedrockServer.test_concurrent_requests) ... [17/Nov/2026 23:46:53] 127.0.0.1 "POST /reset_stats HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "GET /stats HTTP/1.1" 200 -
+ok
+test_converse_records_authorization_header (test_server.TestMockBedrockServer.test_converse_records_authorization_header) ... [17/Nov/2026 23:46:54] 127.0.0.1 "POST /reset_stats HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/m/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "GET /requests HTTP/1.1" 200 -
+ok
+test_health_ping (test_server.TestMockBedrockServer.test_health_ping) ... [17/Nov/2026 23:46:54] 127.0.0.1 "GET /ping HTTP/1.1" 200 -
+ok
+test_loop_forever_keeps_requesting_tools (test_server.TestMockBedrockServer.test_loop_forever_keeps_requesting_tools) ... [17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/m/converse HTTP/1.1" 200 -
+ok
+test_mcp_initialize_list_call_over_sse (test_server.TestMockBedrockServer.test_mcp_initialize_list_call_over_sse) ... [17/Nov/2026 23:46:54] 127.0.0.1 "POST /mcp HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /mcp HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /mcp HTTP/1.1" 200 -
+ok
+test_single_turn_converse (test_server.TestMockBedrockServer.test_single_turn_converse) ... [17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+ok
+test_tool_use_and_multi_turn (test_server.TestMockBedrockServer.test_tool_use_and_multi_turn) ... [17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+[17/Nov/2026 23:46:54] 127.0.0.1 "POST /model/anthropic.claude-3-sonnet/converse HTTP/1.1" 200 -
+ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.886s
+
+OK

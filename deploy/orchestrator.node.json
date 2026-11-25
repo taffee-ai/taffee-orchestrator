@@ -1,0 +1,68 @@
+{
+  "max_agents": 20,
+  "memory_limit_mb": 64,
+  "turn_timeout_secs": 300,
+  "idle_ttl_secs": 900,
+  "default_spec": {
+    "model": {
+      "provider": "openai-chat",
+      "modelId": "claude-haiku-5.5",
+      "endpoint": "https://model-gateway.example/v1",
+      "maxTokens": 4096
+    },
+    "limits": {
+      "turns": 30,
+      "totalTokens": 400000,
+      "toolOutputChars": 16000
+    }
+  },
+  "credentials": [
+    {
+      "kind": "bearer",
+      "name": "model",
+      "destination": "https://model-gateway.example",
+      "token_file": "/run/model.key"
+    }
+  ],
+  "work": {
+    "kinds_dir": "/opt/taffee/kinds",
+    "principal": "orchestrator:taffee",
+    "resolve": {
+      "names": {
+        "payments-service": [
+          "github.com/acme/payments-service"
+        ]
+      },
+      "versions": {
+        "github.com/acme/payments-service@main": "4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e"
+      }
+    },
+    "policy": {
+      "principals": {
+        "user:owner": {
+          "max_effects": "irreversible",
+          "max_usd": 2.0,
+          "max_time": "15m"
+        },
+        "orchestrator:taffee": {
+          "max_effects": "irreversible",
+          "max_usd": 2.0,
+          "max_time": "15m"
+        }
+      }
+    },
+    "inputs": {
+      "github.com/acme/payments-service@4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e": "/opt/taffee/inputs/payments-service@4f2c9e1.yaml"
+    },
+    "roles": {
+      "normalizer": {},
+      "planner": {},
+      "worker": {}
+    }
+  },
+  "egress": {
+    "allow": [
+      "*"
+    ]
+  }
+}

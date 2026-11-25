@@ -1,0 +1,43 @@
+# Orchestrator service, written to be merged into the taffee-core stack's compose file.
+# Until then it runs on its own:
+#   docker compose -f deploy/compose.orchestrator.yaml --env-file ~/taffee/stack.env up -d
+#
+# Settings (env file):
+#   ORCH_BIND                 host address to publish on (default 127.0.0.1; 0.0.0.0 for the LAN)
+#   ORCH_PORT                 host port (default 8780)
+#   ORCH_API_TOKENS_FILE      file of `name token` lines; required (same format as MCP_TOKENS_FILE)
+#   ORCH_CONFIG_FILE          optional JSON config (see deploy/orchestrator.example.json)
+#   ORCH_MODEL_ENDPOINT       default model endpoint for agents that do not set one
+#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN
+#                             read by the host only, if the config has an aws_sigv4 rule
+#   TAFFEE_MCP_TOKEN          read by the host only, if the config has a bearer rule for MCP
+name: taffee-ai
+
+services:
+  orchestrator:
+    image: taffee-orchestrator:dev
+    restart: unless-stopped
+    ports:
+      - "${ORCH_BIND:-127.0.0.1}:${ORCH_PORT:-8780}:8780"
+    environment:
+      TAFFEE_ORCH_API_TOKENS_FILE: /run/orch-tokens
+      TAFFEE_ORCH_CONFIG: "${ORCH_CONFIG_PATH_IN_CONTAINER:-}"
+      TAFFEE_ORCH_MODEL_ENDPOINT: "${ORCH_MODEL_ENDPOINT:-}"
+      TAFFEE_ORCH_MAX_AGENTS: "${ORCH_MAX_AGENTS:-200}"
+      TAFFEE_ORCH_RECORDS: /var/lib/taffee/turns.jsonl
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-}"
+      AWS_SESSION_TOKEN: "${AWS_SESSION_TOKEN:-}"
+      TAFFEE_MCP_TOKEN: "${TAFFEE_MCP_TOKEN:-}"
+    volumes:
+      - "${ORCH_API_TOKENS_FILE:?Set ORCH_API_TOKENS_FILE (lines of: name token)}:/run/orch-tokens:ro"
+      - orchestrator-cache:/var/cache/taffee
+      - orchestrator-records:/var/lib/taffee
+    # Virtual address space is reserved per agent slot (64 MB memory + guard); resident memory
+    # is what the density bench measures. Size mem_limit from it: ~base + agents x per-agent.
+    mem_limit: "${ORCH_MEM_LIMIT:-2g}"
+    memswap_limit: "${ORCH_MEM_LIMIT:-2g}"
+
+volumes:
+  orchestrator-cache:
+  orchestrator-records:

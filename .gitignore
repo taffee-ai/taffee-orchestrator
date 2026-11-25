@@ -1,0 +1,54 @@
+# Build output (rebuilt by scripts/ci.sh in the builder container)
+target/
+node_modules/
+dist/
+*.cwasm
+*.cwasm.tmp
+.builder-built
+__pycache__/
+*.pyc
+
+# slop/ folders are local notes only and are never committed, at any depth.
+slop/
+
+# Agent instructions hold local paths and machine notes; they stay local, as in the other taffee-ai repos.
+/AGENTS.md
+/CLAUDE.md
+
+# Test machines (addresses, users, keys). Template: scripts/boxes.example.sh
+scripts/boxes.local.sh
+
+# Historical docs from the project this code was copied from; kept on disk, not published.
+/docs/features/dense-strands/
+/docs/features/README.md
+/docs/analysis.md
+/docs/strands-for-wasm.md
+/docs/BACKLOG.md
+/docs/ORIGIN.md
+
+# Reference copy only; the build uses the pinned submodule upstream/strands-harness-sdk.
+/upstream/strands-sdk-typescript/
+
+# Environment and secrets (never committed)
+.env
+.env.*
+*.key
+*.pem
+*.pfx
+.aws/
+.ssh/
+.netrc
+
+# IDE and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Agent coordination state and tool folders: local only, never committed.
+mailbox/
+.maildepot/
+.codex/
+
+# Internal backlog and decision log; kept local, not published.
+/docs/service-backlog.md

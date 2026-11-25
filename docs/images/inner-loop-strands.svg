@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 700" width="1400" height="700" font-family="Helvetica, Arial, sans-serif">
+  <title>The inner loop: the Strands Agent Loop, as shipped and with Taffee's inner checks</title>
+  <defs>
+    <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6a3fb5"/>
+    </marker>
+    <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b8661f"/>
+    </marker>
+    <style>
+      .h { font-size: 24px; font-weight: 700; fill: #1f2a44; }
+      .h2 { font-size: 17px; font-weight: 700; fill: #4a2a85; }
+      .t { font-size: 15px; fill: #1f2a44; }
+      .tp { font-size: 15px; fill: #4a2a85; }
+      .s { font-size: 13.5px; fill: #1f2a44; }
+      .so { font-size: 13.5px; fill: #8a4b10; }
+      .sob { font-size: 14px; font-weight: 700; fill: #8a4b10; }
+      .node { fill: #efe7fb; stroke: #6a3fb5; stroke-width: 1.5; }
+      .arr { stroke: #6a3fb5; stroke-width: 2.2; fill: none; }
+      .hook { stroke: #b8661f; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+      .card { fill: #fff6ec; stroke: #d98a3a; stroke-width: 1.4; }
+    </style>
+  </defs>
+  <rect width="1400" height="700" fill="#ffffff"/>
+  <text class="h" x="40" y="48">The inner loop is the vendor's agent loop. Here: the Strands Agent Loop.</text>
+  <text class="t" x="40" y="74">Left: as Strands ships it. Right: the same loop, with Taffee's inner checks plugged into Strands' own hooks.</text>
+
+  <!-- LEFT: as shipped -->
+  <rect x="30" y="100" width="560" height="560" rx="12" fill="#f8f5fd" stroke="#6a3fb5" stroke-width="2"/>
+  <text class="h2" x="50" y="132">1. The Strands Agent Loop, as shipped</text>
+
+  <rect class="node" x="60" y="165" width="180" height="40" rx="8"/>
+  <text class="tp" x="150" y="190" text-anchor="middle">Request (task)</text>
+  <path class="arr" d="M150,205 L150,243" marker-end="url(#p)"/>
+
+  <rect class="node" x="60" y="247" width="180" height="48" rx="8"/>
+  <text class="tp" x="150" y="276" text-anchor="middle" font-weight="700">Invoke model</text>
+  <rect class="node" x="360" y="247" width="180" height="48" rx="8"/>
+  <text class="tp" x="450" y="276" text-anchor="middle" font-weight="700">Execute tool</text>
+  <path class="arr" d="M240,262 L356,262" marker-end="url(#p)"/>
+  <text class="s" x="298" y="254" text-anchor="middle">requests a tool</text>
+  <path class="arr" d="M360,282 L244,282" marker-end="url(#p)"/>
+  <text class="s" x="300" y="302" text-anchor="middle">tool result</text>
+
+  <path class="arr" d="M150,295 L150,343" marker-end="url(#p)"/>
+  <text class="s" x="160" y="324">no tool requested</text>
+  <rect class="node" x="60" y="347" width="220" height="48" rx="8"/>
+  <text class="tp" x="170" y="368" text-anchor="middle" font-weight="700">Final response</text>
+  <text class="s" x="170" y="386" text-anchor="middle">+ stop reason</text>
+
+  <text class="t" x="50" y="440" font-weight="700">How it decides it is done</text>
+  <text class="s" x="50" y="463">The model decides: it stops asking for tools and answers.</text>
+  <text class="s" x="50" y="483">Nothing in the loop checks the answer against the task.</text>
+  <text class="t" x="50" y="520" font-weight="700">What ships with it</text>
+  <text class="s" x="50" y="543">• Invocation limits (turns, LLM tokens), cancellation</text>
+  <text class="s" x="50" y="563">• Stop reasons (why it ended) and retry strategies</text>
+  <text class="s" x="50" y="583">• Five hooks to step in (interventions), each with its actions:</text>
+  <text class="so" x="62" y="603">beforeInvocation · beforeModelCall · afterModelCall</text>
+  <text class="so" x="62" y="621">beforeToolCall (incl. confirm) · afterToolCall</text>
+  <text class="s" x="50" y="647" font-style="italic">They do nothing unless someone plugs code into them.</text>
+
+  <!-- RIGHT: with Taffee's checks -->
+  <rect x="620" y="100" width="750" height="560" rx="12" fill="#f8f5fd" stroke="#6a3fb5" stroke-width="2"/>
+  <text class="h2" x="640" y="132">2. Same loop, with Taffee's inner checks (via Strands hooks)</text>
+
+  <rect class="node" x="650" y="165" width="180" height="40" rx="8"/>
+  <text class="tp" x="740" y="190" text-anchor="middle">Request (task contract)</text>
+  <path class="arr" d="M740,205 L740,243" marker-end="url(#p)"/>
+
+  <rect class="node" x="650" y="247" width="180" height="48" rx="8"/>
+  <text class="tp" x="740" y="276" text-anchor="middle" font-weight="700">Invoke model</text>
+  <rect class="node" x="950" y="247" width="180" height="48" rx="8"/>
+  <text class="tp" x="1040" y="276" text-anchor="middle" font-weight="700">Execute tool</text>
+  <path class="arr" d="M830,262 L946,262" marker-end="url(#p)"/>
+  <text class="s" x="888" y="244" text-anchor="middle">requests a tool</text>
+  <path class="arr" d="M950,282 L834,282" marker-end="url(#p)"/>
+  <text class="s" x="890" y="302" text-anchor="middle">tool result</text>
+  <path d="M882,262 l7,-7 l7,7 l-7,7 z" fill="#d98a3a"/>
+  <path d="M816,247 l7,-7 l7,7 l-7,7 z" fill="#d98a3a"/>
+
+  <path class="arr" d="M740,295 L740,343" marker-end="url(#p)"/>
+  <text class="s" x="750" y="324">submits an answer</text>
+  <path d="M733,313 l7,-7 l7,7 l-7,7 z" fill="#d98a3a"/>
+  <rect class="node" x="650" y="347" width="220" height="48" rx="8"/>
+  <text class="tp" x="760" y="368" text-anchor="middle" font-weight="700">Final response</text>
+  <text class="s" x="760" y="386" text-anchor="middle">only once the checks pass</text>
+
+  <!-- hook cards -->
+  <rect class="card" x="1150" y="160" width="205" height="112" rx="8"/>
+  <text class="sob" x="1162" y="182">beforeToolCall</text>
+  <text class="so" x="1162" y="203">Loop guard: the same tool</text>
+  <text class="so" x="1162" y="221">with the same input again?</text>
+  <text class="so" x="1162" y="241">→ guide ("you tried that");</text>
+  <text class="so" x="1162" y="259">  repeated → deny</text>
+  <path class="hook" d="M1150,215 C1080,215 940,215 893,255" marker-end="url(#o)"/>
+
+  <rect class="card" x="1150" y="290" width="205" height="108" rx="8"/>
+  <text class="sob" x="1162" y="312">afterModelCall</text>
+  <text class="so" x="1162" y="333">Budget: few turns or</text>
+  <text class="so" x="1162" y="351">LLM tokens left?</text>
+  <text class="so" x="1162" y="371">→ guide ("submit what</text>
+  <text class="so" x="1162" y="389">  you have")</text>
+  <path class="hook" d="M1150,330 C1000,330 900,300 829,252" marker-end="url(#o)"/>
+
+  <rect class="card" x="890" y="414" width="465" height="128" rx="8"/>
+  <text class="sob" x="902" y="432">beforeToolCall, on the submit tool (handing in is a tool call)</text>
+  <text class="so" x="902" y="454">Run the task contract's checks on the proposed answer: right shape,</text>
+  <text class="so" x="902" y="472">every cited fact exists in the inputs, nothing outside its scope,</text>
+  <text class="so" x="902" y="490">nothing it was given left out. The checks come from the host (read-only).</text>
+  <text class="so" x="902" y="512">→ fail: guide with the failures; the model fixes them and the loop goes on</text>
+  <text class="so" x="902" y="530">→ pass: proceed to the final response</text>
+  <path class="hook" d="M890,470 C820,470 760,420 748,322" marker-end="url(#o)"/>
+
+  <text class="t" x="640" y="580" font-weight="700">Still advisory</text>
+  <text class="s" x="640" y="602">The agent hands in work that should pass; the orchestrator's outer Evaluate re-runs the same</text>
+  <text class="s" x="640" y="622">checks independently and alone decides the outcome. Configured in agent.ts; nothing under the</text>
+  <text class="s" x="640" y="642">SDK changes. Another vendor (e.g. LangGraph) has its own loop and hook points; the contract is the same.</text>
+</svg>

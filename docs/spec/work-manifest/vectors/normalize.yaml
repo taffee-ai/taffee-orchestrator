@@ -1,0 +1,171 @@
+# normalize: request → reply. `principal` is who authenticated.
+stage: normalize
+vectors:
+
+  - id: N-01
+    title: A person sends one sentence; a dry run returns the frozen manifest
+    rules: [WM-REQ-02, WM-REQ-03, WM-NRM-01, WM-NRM-02, WM-NRM-03, WM-NRM-05, WM-NRM-10, WM-NRM-11, WM-FRZ-01, WM-FRZ-03, WM-FRZ-06, WM-HND-01, WM-HND-04, WM-RES-07]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      want: If I rename PaymentService to PaymentGateway in payments-service, what breaks? Need file and line.
+      dry_run: true
+    expect:
+      status: READY
+      digest: { $match: "^sha256:[0-9a-f]{64}$" }
+      normalized_by: { id: taffee-normalizer, version: "0.1.0" }
+      assumed:
+        kind: $any
+        given.repo: $any
+        parameters.symbol: $absent        # copied verbatim from the caller's words
+      manifest:
+        by: user:alice
+        said: If I rename PaymentService to PaymentGateway in payments-service, what breaks? Need file and line.
+        want: Every place that breaks if PaymentService is renamed to PaymentGateway
+        given: { repo: github.com/acme/payments-service@4f2c9e1b7a3d5c8e9f0a1b2c3d4e5f6a7b8c9d0e }
+        kind: { $match: "^code\\.impact_analysis@1#sha256:[0-9a-f]{64}$" }
+        parameters: { symbol: PaymentService, rename_to: PaymentGateway, paths: ["**"] }
+        done_when: { cited: $any, on_target: $any, complete: $any }
+        checks: { cited: $any, on_target: $any, complete: $any }
+        requires: { declared: $any }
+        limits: { effects: read-only, usd: 0.50, time: 10m }
+        partial_ok: false
+        delegation: { depth: 0 }
+        digest: { $same: N-01.digest }
+
+  - id: N-02
+    title: A program sends kind and parameters; the same work gets the same digest
+    rules: [WM-REQ-02, WM-NRM-01, WM-NRM-02, WM-NRM-05, WM-NRM-11, WM-NRM-13, WM-FRZ-02]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      dry_run: true
+    expect:
+      status: READY
+      digest: { $same: N-01.digest }      # who asked and how they phrased it are not in the digest
+      assumed:
+        kind: $absent                     # the caller named it
+        given.repo: $any                  # main → 4f2c9e1…
+      manifest:
+        by: service:ci-bot
+        said: $absent
+        want: Every place that breaks if PaymentService is renamed to PaymentGateway
+
+  - id: N-03
+    title: Another orchestrator forwards the frozen manifest; nothing is reinterpreted
+    rules: [WM-REQ-01, WM-NRM-13, WM-FRZ-02, WM-FRZ-07]
+    principal: orchestrator:taffee-b
+    request:
+      $from: N-01.manifest
+      with: { by: "orchestrator:taffee-b", for: ["user:alice"], dry_run: true }
+    expect:
+      status: READY
+      digest: { $same: N-01.digest }
+      assumed: $absent
+      manifest: { by: "orchestrator:taffee-b", for: ["user:alice"] }
+
+  - id: N-04
+    title: The caller adds a check and picks a decide option; the kind's checks stay
+    rules: [WM-NRM-04, WM-NAR-01, WM-FRZ-02, WM-FRZ-06]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      decide: { tests: exclude }
+      done_when: { no_tests: No cited place is under test/ }
+      checks: { no_tests: "answer.breaks.all(i, !i.file.startsWith('test/'))" }
+      dry_run: true
+    expect:
+      status: READY
+      digest: { $differs: N-02.digest }
+      manifest:
+        decide: { tests: exclude, non_code_mentions: list_as_mentions }
+        done_when: { $contains: [cited, on_target, complete, no_tests] }
+        checks:
+          cited: $any
+          on_target: $any
+          complete: $any
+          no_tests: "answer.breaks.all(i, !i.file.startsWith('test/'))"
+
+  - id: N-05
+    title: The caller sets a budget above its policy; refused with a counter, not silently lowered
+    rules: [WM-NRM-04, WM-NAR-03]
+    principal: user:alice
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      limits: { usd: 5.00 }
+    expect:
+      status: REFUSED
+      reason: out_of_policy
+      violates: [WM-NAR-03]
+      counter:
+        limits: { usd: 2.00 }
+        digest: $any
+
+  - id: N-06
+    title: A kind default above the principal's policy is lowered and recorded
+    rules: [WM-NRM-02, WM-NAR-02]
+    principal: service:intern-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      dry_run: true
+    expect:
+      status: READY
+      assumed: { limits.usd: $any }
+      manifest: { limits: { effects: read-only, usd: 0.25, time: 10m } }
+
+  - id: N-07
+    title: A decide value that is not one of the kind's options
+    rules: [WM-NRM-12]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      decide: { tests: only }
+    expect:
+      status: REFUSED
+      reason: invalid
+      violates: [WM-NRM-12]
+
+  - id: N-08
+    title: An unknown field is refused
+    rules: [WM-REQ-04]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      priority: high
+    expect:
+      status: REFUSED
+      reason: invalid
+      violates: [WM-REQ-04]
+
+  - id: N-09
+    title: An x- field is ignored and does not change the digest
+    rules: [WM-REQ-04, WM-NRM-13, WM-FRZ-02]
+    principal: service:ci-bot
+    request:
+      manifest: "0.1"
+      kind: code.impact_analysis@1
+      parameters: { symbol: PaymentService, rename_to: PaymentGateway }
+      given: { repo: github.com/acme/payments-service@main }
+      x-ticket: PAY-1234
+      dry_run: true
+    expect:
+      status: READY
+      digest: { $same: N-02.digest }

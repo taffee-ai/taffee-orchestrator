@@ -1,0 +1,10 @@
+date_utc: 2026-11-22T21:14:56Z
+source: unknown
+kernel: Linux 7.0.14-linuxkit x86_64
+cpu: Intel(R) Core(TM) i3-1000NG4 CPU @ 1.10GHz
+cpus_visible: 4
+mem_total_mb: 7938
+rustc: rustc 1.96.0 (ac68faa20 2026-05-25)
+node: v20.20.2
+python: Python 3.11.2
+density_levels: 1,10,50,100

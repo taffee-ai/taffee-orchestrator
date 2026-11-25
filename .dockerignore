@@ -1,0 +1,5 @@
+*
+!dist/orchestratord
+!strand-agent/dist/strand-agent.wasm
+!docs/spec/work-manifest/kinds/
+!docs/spec/work-manifest/fixtures/
